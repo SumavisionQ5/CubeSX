@@ -111,7 +111,7 @@ static struct {
 	u8 AdpcmActive;
 	u32 LastReadSeekCycles;
 
-	u8 unused7;
+	u8 RetryDetected;
 
 	u8 DriveState; // enum drive_state
 	u8 FastForward;
@@ -576,6 +576,15 @@ static void cdrPlayInterrupt_Autopause()
 		cdr.ReportDelay--;
 }
 
+static boolean canDoTurbo(void)
+{
+	u32 c = psxRegs.cycle;
+	return /* Config.TurboCD && */ !cdr.RetryDetected && !cdr.AdpcmActive
+		//&& c - psxRegs.intCycle[PSXINT_SPUDMA].sCycle > (u32)cdReadTime * 2
+		&& c - psxRegs.intCycle[PSXINT_MDECOUTDMA].sCycle > (u32)cdReadTime * 16;
+	// Set Config.TurboCD as true!
+}
+
 static int cdrSeekTime(unsigned char *target)
 {
 	int diff = msf2sec(cdr.SetSectorPlay) - msf2sec(target);
@@ -656,6 +665,11 @@ static void msfiSub(u8 *msfi, u32 count)
 			msfi[0]--;
 		}
 	}
+}
+
+static int msfiEq(const u8 *a, const u8 *b)
+{
+	return a[0] == b[0] && a[1] == b[1] && a[2] == b[2];
 }
 
 void cdrPlayReadInterrupt(void)
@@ -817,6 +831,9 @@ void cdrInterrupt(void) {
 			{
 				for (i = 0; i < 3; i++)
 					set_loc[i] = btoi(cdr.Param[i]);
+				cdr.RetryDetected = msfiEq(cdr.SetSector, set_loc)
+					&& !cdr.SetlocPending;
+				//cdr.RetryDetected |= msfiEq(cdr.Param, cdr.Transfer);
 				memcpy(cdr.SetSector, set_loc, 3);
 				cdr.SetSector[3] = 0;
 				cdr.SetlocPending = 1;
@@ -1106,7 +1123,8 @@ void cdrInterrupt(void) {
 			StopReading();
 			SetPlaySeekRead(cdr.StatP, STATUS_SEEK | STATUS_ROTATING);
 
-			seekTime = cdrSeekTime(cdr.SetSector);
+			if (!canDoTurbo())
+				seekTime = cdrSeekTime(cdr.SetSector);
 			memcpy(cdr.SetSectorPlay, cdr.SetSector, 4);
 			cdr.DriveState = DRIVESTATE_SEEK;
 			/*
@@ -1251,6 +1269,8 @@ void cdrInterrupt(void) {
 			cycles += seekTime;
 			if (Config.hacks.cdr_read_timing)
 				cycles = cdrAlignTimingHack(cycles);
+			else if (canDoTurbo())
+				cycles = cdReadTime / 2;
 			CDRPLAYREAD_INT(cycles, 1);
 
 			SetPlaySeekRead(cdr.StatP, STATUS_SEEK);
@@ -1440,6 +1460,9 @@ unsigned char cdrRead0(void) {
 	cdr.Ctrl &= ~0x24;
 	cdr.Ctrl |= cdr.AdpcmActive << 2;
 	cdr.Ctrl |= cdr.ResultReady << 5;
+	
+	//cdr.Ctrl &= ~0x40;
+	//if (cdr.FifoOffset != DATA_SIZE)
 
 	cdr.Ctrl |= 0x40; // data fifo not empty
 
@@ -1640,7 +1663,7 @@ void cdrWrite3(unsigned char rt) {
 }
 
 void psxDma3(u32 madr, u32 bcr, u32 chcr) {
-	u32 cdsize, max_words;
+	u32 cdsize, max_words, cycles;
 	int size;
 	u8 *ptr;
 
@@ -1686,7 +1709,8 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 			}
 			psxCpu->Clear(madr, cdsize / 4);
 
-			set_event(PSXINT_CDRDMA, (cdsize / 4) * 24);
+			cycles = (cdsize / 4) * 24;
+			set_event(PSXINT_CDRDMA, cycles);
 
 			HW_DMA3_CHCR &= SWAPu32(~0x10000000);
 			if (chcr & 0x100) {
@@ -1695,8 +1719,10 @@ void psxDma3(u32 madr, u32 bcr, u32 chcr) {
 			}
 			else {
 				// halted
-				psxRegs.cycle += (cdsize/4) * 24 - 20;
+				psxRegs.cycle += cycles - 20;
 			}
+			if (canDoTurbo() && cdr.Reading && cdr.FifoOffset >= 2048)
+				CDRPLAYREAD_INT(cycles + 4096, 1);
 			return;
 
 		default:
