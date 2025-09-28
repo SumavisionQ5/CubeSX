@@ -1,95 +1,3 @@
-# WiiSX / CubeSX
-
-## 许可协议
-
-该软件基于 **GNU 通用公共许可证 v2** 进行许可，详细内容请访问：
-[http://www.gnu.org/licenses/gpl-2.0.txt](http://www.gnu.org/licenses/gpl-2.0.txt)
-
-这要求任何发布的修改都需采用相同许可，并且提供源代码。
-
-WiiSX/CubeSX 及其相关标志是 **Team Wii64** 的商标，未经授权不得在非官方版本中使用。
-
----
-
-## 快速使用
-
-* 支持的 ISO 格式：`.bin/.cue`（确保 .cue 文件包含相对路径！）、`.img` 或 `.iso`。
-* 安装方法：将 `wiiSX-<版本号>.zip` 的内容解压到 **SD 卡根目录**。
-* SD 卡检测顺序：
-
-  * **GameCube**：GCLoader → SD2SP2 → 插槽 A → 插槽 B
-  * **Wii**：前置 SD → 插槽 A → 插槽 B
-* **SD/USB**：将 ISO 文件放入 `/wiisx/isos` 目录，所有存档会自动保存到 `/wiisx/saves`。
-* **DVD**：ISO 可以放在光盘任意位置，需为 ISO9660 格式。
-
-  * GameCube：当前因 libOGC 问题无法使用（XenoGC 可能仍然可行）。
-  * Wii：需要能读取 DVD-R 的光驱。
-* **BIOS**：将 `SCPH1001.BIN` 放入 `/wiisx/bios` 目录（SD/USB）。
-* 从 HBC 或其他加载器启动可执行文件 → 选择 **Load ISO** → 选择来源并加载 ISO。
-
-  > 上级目录选择 `..`，B 键退出文件浏览器。
-* 选择 **Play Game** 开始游戏。
-
-  * 可随时按下组合键退出游戏：
-
-    * GC 手柄：START + X
-    * 经典控制器：HOME
-    * Wiimote：- + +
-    * Wiimote + Nunchuck：1 + 2
-    * 或按 Reset 键
-  * 注意：退出是保存游戏的唯一方式，不会自动保存。
-
----
-
-## 控制
-
-* 按钮可完全自定义映射。
-* 配置界面会显示所有 PSX 按钮，逐一切换来源。
-* 每种手柄有 **4 个配置槽**：
-
-  * 点击“Load”加载之前保存的配置。
-  * 设置完成后点击“Save”保存到该槽。
-  * 记得在设置 → 输入标签中保存整体配置。
-* 点击“Next Pad”可切换已分配的 PSX 控制器。
-* 模拟摇杆 Y 轴可反转（默认 Normal Y）。
-* “Menu Combo” 可配置返回菜单的组合键。
-
----
-
-## 设置
-
-### 常规
-
-* **Native Saves Device**：选择存档保存位置。
-* **Save States Device**：选择即时存档保存位置。
-* **Select CPU Core**：选择解释器（兼容性更好）或动态重编译（速度更快）。
-* **Save settings.cfg**：将设置保存到 SD/USB，下次自动加载。
-
-### 视频
-
-* **Show FPS**：显示帧率。
-* **Screen Mode**：选择宽高比（强制 16:9 会在两侧加黑边）。
-
-### 输入
-
-* **Configure Input**：选择手柄。
-* **Configure Buttons**：进入手柄配置界面。
-* **Save Button Configs**：保存配置到 SD/USB。
-* **Auto Load Slot**：选择自动加载的槽位。
-
-### 音频
-
-* **Disable Audio**：静音。
-
-### 存档
-
-* **Auto Save Native Saves**：启用后会在加载 ISO 时自动加载存档，返回菜单或关机时保存。
-* **Copy Saves**：未实现。
-* **Delete Saves**：未实现。
-
----
-
-## 兼容性
 
 遇到问题请千万不要反馈至：
 [https://github.com/emukidid/pcsxgc/issues](https://github.com/emukidid/pcsxgc/issues)
@@ -97,76 +5,245 @@ WiiSX/CubeSX 及其相关标志是 **Team Wii64** 的商标，未经授权不得
 所以有兼容性问题也不要反馈到原版pcsxgc页面。
 
 ---
+README : WiiSX / CubeSX
 
-## 致谢
+许可协议：
+该软件基于 GNU 通用公共许可证 v2 进行许可，详细内容请访问：http://www.gnu.org/licenses/gpl-2.0.txt
 
-* **一般编码**：emu_kidid
-* **图形 & 菜单编码**：sepp256
-* **音频 & 核心编码**：tehpola
-* **美术**：drmr
-* **pcsx 团队**：[http://www.pcsx.net/](http://www.pcsx.net/)
-* **notaz** (pcsx-ReARMed)
-* **pcercuei** (lightrec) [https://github.com/pcercuei/lightrec/](https://github.com/pcercuei/lightrec/)
-* 基于 **Gil Pederson** 的 pcsx 1.5-test3 Mac 版 [http://pcsx.gpost.dk/](http://pcsx.gpost.dk/)
-* **P.E.Op.S. PSX GPU & SPU** [http://sourceforge.net/projects/peops/](http://sourceforge.net/projects/peops/)
-* **SSSPSX**
-* 使用 **devKitPro/libOGC** 编译 [http://sourceforge.net/projects/devkitpro](http://sourceforge.net/projects/devkitpro)
-* 加入我们的社区：IRC EFNet #gc-forever / [www.gc-forever.com](http://www.gc-forever.com) / [GitHub](https://github.com/emukidid/pcsxgc/)
+这要求任何发布的修改都需采用相同许可，并且提供源代码。
 
----
+WiiSX/CubeSX 及其相关标志是 Team Wii64 的商标，未经授权不得在非官方版本中使用。
 
-## 更新日志
+快速使用：
 
-> 请在 GitHub Releases 查看最新更新，本节不再维护。
+支持的 ISO 格式：.bin/.cue（确保 .cue 文件包含相对路径！）、.img 或 .iso 格式。
 
-### Beta 4.0
+安装方法：将 wiiSX-<版本号>.zip 的内容解压到 SD 卡的根目录。
 
-* 正式集成 libpsxcore。
-* 切换到上游 unai GPU 插件，性能显著提升。
-* 三重缓冲。
-* 构建系统改为 cmake。
+SD 卡检测顺序如下：
 
-### Beta 3.0
+GameCube：GCLoader、SD2SP2、A 插槽、B 插槽。
 
-* 新 dynarec (lightrec)，提升速度和兼容性。
-* 同步 pcsx-ReARMed 上游，彻底解决 Wii 上 XA/CDDA 卡顿。
-* dfsound 音频插件。
-* 软图形插件优化（感谢 Extrems）。
-* GameCube 支持 SD2SP2。
-* 修复 UI bug 与内存泄漏。
+Wii：前置 SD、A 插槽、B 插槽。
 
-### Beta 2.1
+对于 SD/USB：将 ISO 文件（.bin/.cue 或其他格式）放入名为 /wiisx/isos 的目录中，所有保存类型将自动放入 /wiisx/saves。
 
-* 使用 devkitPPC r21 / libOGC SVN 编译。
-* 使用新 libDI / DVDx V2。
-* **保存改进**：修复未写入存档问题，支持音频状态保存/加载。
-* **手柄改进**：修复 Y 轴反转、震动、无效端口输入，支持 CC Home 键，添加禁用震动。
-* **网络改进**：修复 SMB 匿名登录，线程化网络初始化并提示错误信息。
+对于 DVD：ISO 文件可以放在光盘的任何位置，必须是 ISO9660 格式。
 
-### Beta 2
+GameCube：由于 libOGC 在备份的兼容性问题，当前无法使用，XenoGC 可能仍然有效。
 
-* 使用 devkitPPC r21 / libOGC SVN 编译。
-* 使用新 libDI / DVDx V2。
-* DVD 读取改为直接 PowerPC 访问。
-* 支持 Samba 加载。
-* 支持执行 BIOS。
-* **手柄改进**：Wiimote 输入支持震动，支持经典控制器 Pro & 第三方，按钮可重映射并保存/加载。
-* **新菜单系统**：支持 CC、Wiimote、Nunchuck，支持设置保存和自动存档。
-* **PEOPS GPU**：强制 16:9 加黑边，修复 FMV 色彩映射。
-* **FranSPU**：全帧平滑立体声音频。
-* **SSSPSX 输入插件**：支持 DualShock、震动、模拟/数字切换。
-* **CDRMooby**：改进兼容性（CDDA 尚未实现）。
+Wii：需要支持读取 DVD-R 的光驱。
 
-### Beta 1
+对于实际的 BIOS：将 SCPH1001.BIN 放入名为 /wiisx/bios 的 SD/USB 目录中。
 
-* 音频（有轻微卡顿）。
-* DVD 加载。
-* 软件图形 + GX 缩放。
-* 保存到 SD 卡。
-* 文本 UI。
-* **已知问题**：
+从 HBC 或所选的加载器中加载可执行文件。加载后，选择“加载 ISO”并选择要加载的 ISO。
+（注意：要上级目录，请选择“..”，按 B 键退出文件浏览器）
 
-  * 未实现 CDDA 音频流。
-  * XA 音频偶尔失败。
-  * 《最终幻想 VII》在 dynarec 下会崩溃。
-  * FPS 限制偶尔失效。
+选择“玩游戏”开始游戏。
+游戏可以随时通过按下 GC 手柄的可配置按键组合（START 和 X）、经典控制器（HOME）、Wiimote（- 和 +）、Wiimote + Nunchuck（1 和 2），或者复位按钮退出。
+（注意：必须这样做才能保存游戏，退出时不会自动保存。）
+
+控制：
+
+控制完全可配置，可以将任意按钮映射到手柄。
+
+控制配置屏幕会显示每个 PSX 按钮，并允许切换源。
+
+每种类型的控制器有 4 个配置槽：
+
+要加载之前保存的不同配置，选择槽并点击“加载”。
+
+配置完成后，选择槽并点击“保存”。
+
+保存不同配置后，记得在设置框的输入标签中保存配置。
+
+点击“下一个手柄”将循环浏览已分配的 PSX 控制器。
+
+可以选择反转 PSX 模拟摇杆的 Y 轴，默认为“正常 Y”。
+
+“菜单组合”配置允许您选择返回菜单的按钮组合。
+
+设置：
+
+常规：
+
+本地保存设备：选择加载和保存本地游戏存档的位置。
+
+存档设备：选择加载和保存存档的位置。
+
+选择 CPU 核心：选择使用纯解释器（更好的兼容性）还是动态重编译（更好的速度）来运行游戏。
+
+保存 settings.cfg：将所有这些设置保存到 SD 或 USB 中（下次启动时自动加载）。
+
+视频：
+
+显示 FPS：在屏幕左上角显示帧率。
+
+屏幕模式：选择显示的宽高比；‘强制 16:9’模式将使游戏显示具有黑边。
+
+输入：
+
+配置输入：选择游戏中的控制器。
+
+配置按钮：进入上述控制器配置屏幕。
+
+保存按钮配置：将所有控制器配置槽保存到 SD 或 USB。
+
+自动加载槽：为每种类型的控制器选择自动加载的槽。
+
+音频：
+
+禁用音频：选择是否静音。
+
+保存：
+
+自动保存本地存档：启用时，模拟器将在加载 ISO 时自动从选定的设备加载存档，并在返回菜单或关闭主机时保存。
+
+复制存档：尚未实现。
+
+删除存档：尚未实现。
+
+兼容性：
+
+如遇问题，请反馈至 https://github.com/emukidid/pcsxgc/issues
+
+致谢：
+
+一般编码：emu_kidid
+
+图形与菜单编码：sepp256
+
+音频与核心编码：tehpola
+
+艺术设计：drmr
+
+pcsx 团队：http://www.pcsx.net/
+
+notaz for pcsx-ReARMed
+
+pcercuei for lightrec：https://github.com/pcercuei/lightrec/
+
+最初基于 Gil Pederson 提供的 pcsx 1.5-test3 Mac 版本：http://pcsx.gpost.dk/
+
+P.E.Op.S. PSX GPU & SPU：http://sourceforge.net/projects/peops/
+
+SSSPSX
+
+使用最新的 devKitPro/libOGC 编译：http://sourceforge.net/projects/devkitpro
+
+访问我们 IRC 频道：EFNet #gc-forever 或 www.gc-forever.com
+ 或 https://github.com/emukidid/pcsxgc/
+
+更新日志：
+
+请查看 GitHub 上的发布版本，本部分已不再维护。
+
+Beta 4.0：
+
+正确集成 libpsxcore，不再使用临时的修复来接收上游修复。
+
+切换到上游 unai GPU 插件，带来巨大的性能提升。
+
+启用三重缓冲。
+
+切换到 cmake 构建系统。
+
+Beta 3.0：
+
+基于 pcercuei 的 lightrec 新 dynarec 技术，增加了速度和兼容性。
+
+同步更新至 pcsx-ReARMed 上游版本，完全消除 Wii 上 XA/CDDA 的卡顿。
+
+使用 dfsound 音频插件。
+
+提高软图形插件的性能，感谢 Extrems 的建议。
+
+支持 GameCube 的 SD2SP2。
+
+修复了 UI 错误和内存泄漏问题。
+
+Beta 2.1：
+
+使用 devkitPPC r21 / libOGC SVN 编译。
+
+新版 libDI / DVDx V2 编译。
+
+保存改进：
+
+修复保存没有写入存储卡的问题。
+
+保存/加载音频状态。
+
+控制器改进：
+
+修复模拟输入的 Y 轴反转问题。
+
+修复震动问题。
+
+修复未使用输入端口的按键问题。
+
+为经典控制器添加了“Home”按钮作为菜单组合。
+
+添加禁用震动设置。
+
+网络改进：
+
+修复 SMB 允许匿名用户和密码。
+
+增加线程化的网络初始化和错误信息。
+
+Beta 2：
+
+使用 devkitPPC r21 / libOGC SVN 编译。
+
+新版 libDI / DVDx V2 编译。
+
+使用直接 PowerPC 访问读取 DVD。
+
+支持 Samba 加载。
+
+执行 BIOS。
+
+控制器改进：
+
+支持 Wiimote 输入的震动。
+
+仅支持 Wiimote 控制。
+
+支持经典控制器 Pro 和第三方控制器。
+
+支持重新配置按钮映射。
+
+从文件保存/加载按钮映射。
+
+新菜单系统：
+
+支持经典控制器。
+
+支持 Wiimote / Wiimote 和 Nunchuck。
+
+支持设置保存。
+
+自动保存/加载存档选项。
+
+Beta 1：
+
+音频工作（略有卡顿）。
+
+DVD 加载功能。
+
+使用 GX 缩放的软图形。
+
+保存到 SD 卡。
+
+文本 UI。
+
+已知问题：
+
+尚未实现 CDDA 音频流。
+
+XA 音频偶尔失败。
+
+《最终幻想 VII》会导致 Dynarec 崩溃。
+
+FPS 限制偶尔失效。
