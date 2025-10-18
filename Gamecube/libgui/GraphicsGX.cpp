@@ -22,6 +22,184 @@
 #include "GraphicsGX.h"
 #include "../wiiSXconfig.h"
 
+// 240P的关键函数
+GXRModeObj TVMODE_240p =
+{
+	VI_TVMODE_EURGB60_DS, 	// viDisplayMode，设置显示模式。VI_TVMODE_EURGB60_DS 对应的是一种特定的 240p 模式，使用逐行扫描（progressive scan）和 RGB 输出格式。
+	640, 					// fbWidth，帧缓冲区的宽度，单位为像素。在 240p 模式下，宽度被设置为 640 像素。
+	240, 					// efbHeight，嵌入式帧缓冲区（EFB）的高度，用来渲染图像。在 240p 模式下，设置为 240 像素。
+	240, 					// xfbHeight，外部帧缓冲区（XFB）的高度，用于将帧缓冲区数据复制到显示器上。在 240p 模式下，设置为 240 像素。
+	(VI_MAX_WIDTH_NTSC - 640)/2, 		// viXOrigin，帧缓冲区在水平方向上的偏移量，计算公式是将显示区域居中。
+	(VI_MAX_HEIGHT_NTSC/2 - 480/2)/2, 	// viYOrigin，帧缓冲区在垂直方向上的偏移量，计算公式是将 240p 内容垂直居中。
+	640, 					// viWidth，帧缓冲区的可见宽度，设置为 640 像素，与 fbWidth 相同。
+	480, 					// viHeight，帧缓冲区的可见高度，设置为 480 像素，这样可以确保 240p 分辨率的正确显示。
+	VI_XFBMODE_SF, 			// xFBmode，这个参数设置帧缓冲区模式，VI_XFBMODE_SF 表示一个特定的帧缓冲区模式，可能是“标准帧缓冲区”（standard framebuffer）模式。
+	GX_FALSE, 				// field_rendering，这个参数表示是否启用场地渲染（field rendering）。由于 240p 是逐行扫描模式，因此通常禁用场地渲染。
+	GX_FALSE, 				// aa，这个参数表示是否启用抗锯齿（anti-aliasing）。在 240p 模式下，通常禁用抗锯齿。
+	// sample points arranged in increasing Y order，这个数组定义了帧缓冲区的采样模式，共有 12 个采样点用于每个像素，通常用于抗锯齿图像的渲染。在此代码中，所有采样点的值都是 {6, 6}，表示每个像素的采样方式。
+	{
+		{6,6},{6,6},{6,6},  // pix 0, 3 sample points, 1/12 units, 4 bits each
+		{6,6},{6,6},{6,6},  // pix 1
+		{6,6},{6,6},{6,6},  // pix 2
+		{6,6},{6,6},{6,6}   // pix 3
+	},
+	// vertical filter[7], 1/64 units, 64=1.0，这个数组定义了垂直滤镜的值。它们用于图像的垂直滤波，确保图像线条之间的平滑过渡。值对应于帧缓冲区的不同垂直线，用于调整图像渲染。
+	{
+		0, 		// line n-1
+		0, 		// line n-1
+		21, 	// line n
+		22, 	// line n
+		21, 	// line n+1
+		0, 		// line n+1
+		0 		// line n+2
+	}
+};
+
+GXRModeObj gvmode;
+GXRModeObj mgvmode; 
+/*
+gvmode 用于处理默认的视频配置，而 mgvmode 则用于特定的或更高要求的图形模式配置。
+在需要切换视频模式时，这两个变量会发挥作用，根据不同的设置来调整屏幕的渲染方式。
+*/
+
+extern u32* xfb[3];
+enum {
+	FB_BACK,
+	FB_NEXT,
+	FB_FRONT,
+};
+
+extern "C" void switchToTVMode(short dWidth, short dHeight, bool retMenu){ 
+	/* 
+	dWidth：目标显示的宽度，表示画面的宽度。
+	dHeight：目标显示的高度，表示画面的高度。
+	retMenu：布尔值，用于指示是否返回菜单。这个参数影响是否刷新显示并设置黑色背景。 retMenu=1时标识着游戏从运行状态回到了菜单界面，菜单一般不会需要 240p 模式，因此函数会使用更高的分辨率。
+	*/
+	
+	GXRModeObj *rmode; // 指向一个 GXRModeObj 结构体的指针，用来保存当前的显示模式配置。
+	f32 yscale; // 用于保存 Y 轴的缩放因子。
+	u32 xfbHeight; // 分别用于保存帧缓冲区的高度和宽度。
+    u16 xfbWidth;
+	u32 width = 0; // 保存目标显示的宽度和高度。
+	u32 height = 0;
+	Mtx44 perspective; // 保存投影矩阵，通常用于3D渲染的视角设置。
+	GXColor background = {0, 0, 0, 0xff}; // 背景颜色，初始化为黑色（0, 0, 0, 255）。
+	if (dWidth <= 320)
+		dWidth *= 2;  // 如果 dWidth 小于等于 320，就将其乘以 2，确保宽度至少为 640 像素
+
+	rmode = &mgvmode;
+	if (dWidth > rmode->viWidth)
+		dWidth = rmode->viWidth;
+	if (dHeight > rmode->viHeight)
+		dHeight = rmode->viHeight;
+
+
+	if ((dHeight > 288)) // 如果高度大于 288（常见于大于 240p 的模式），则使用 gvmode，并根据 retMenu 决定是否返回菜单。如果返回菜单，重新设置图像的过滤模式。
+	{
+		if(!retMenu) // 不回到菜单，游戏运行状态！实际PS1游戏很少有288P以上的吧？
+		{
+			rmode = &gvmode;
+			rmode->fbWidth = dWidth;
+			rmode->efbHeight = dHeight;
+			rmode->xfbHeight = dHeight;
+			rmode->viYOrigin = (VI_MAX_HEIGHT_NTSC - dHeight)/2;
+			
+			// 先不管PAL和RGB！！！
+			/* if ((CONF_GetEuRGB60() == 0) && (CONF_GetVideo() == CONF_VIDEO_PAL))
+				rmode->viYOrigin = (VI_MAX_HEIGHT_PAL - dHeight)/2; */
+
+			// CubeSX没有隔行模式的选项！！！
+			/* if (interlacedMode){
+				rmode->viTVMode =	(mgvmode.viTVMode & ~0x03) + VI_INTERLACE;
+				rmode->xfbMode = VI_XFBMODE_DF;
+			}
+			else */
+			{
+				rmode->viTVMode =	mgvmode.viTVMode;
+				rmode->xfbMode = mgvmode.xfbMode;
+			}
+		}
+		xfbWidth = VIDEO_PadFramebufferWidth(rmode->fbWidth);
+		width = xfbWidth;
+	}
+	else // 如果高度小于或等于 288（例如 240p 分辨率），则根据用户的视频设置（NTSC、PAL、MPAL）选择不同的视频模式，特别是选择 TVMODE_240p 模式，确保正确显示 240p 分辨率。
+	{
+		/* if (CONF_GetVideo() == CONF_VIDEO_NTSC) */
+		{
+			rmode = &TVMODE_240p;
+			rmode->viTVMode = VI_TVMODE_NTSC_DS;
+			rmode->viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - dHeight)/2;
+
+		}
+		/* else if (CONF_GetEuRGB60() > 0)
+		{
+			rmode = &TVMODE_240p;
+			rmode->viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - dHeight)/2;
+		}
+		else if (CONF_GetVideo() == CONF_VIDEO_MPAL)
+		{
+			rmode = &TVMODE_240p;
+			rmode->viTVMode = VI_TVMODE_MPAL_DS;
+			rmode->viYOrigin = (VI_MAX_HEIGHT_NTSC/2 - dHeight)/2;
+		}
+		else
+		{
+			rmode = &TVMODE_240p;
+			rmode->viTVMode = VI_TVMODE_PAL_DS;
+			rmode->viXOrigin = (VI_MAX_WIDTH_PAL - 640)/2;
+			rmode->viYOrigin = (VI_MAX_HEIGHT_PAL/2 - dHeight)/2;
+		} */
+		rmode->efbHeight = dHeight;
+		rmode->xfbHeight = dHeight;
+
+		rmode->fbWidth = dWidth;
+		width = rmode->fbWidth;
+
+	}
+
+	// 调整图像的拷贝过滤器（包括抗锯齿、采样模式和垂直滤波）。
+	GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,/* (deflickerFilter)?GX_TRUE: */GX_FALSE,rmode->vfilter);  // 不需要deflickerFilter
+
+	VIDEO_Configure (rmode); // 配置视频显示模式
+	VIDEO_Flush(); // 刷新帧缓冲区
+	if (retMenu){ // 如果是返回菜单模式，清除屏幕并设置黑色背景。
+		GX_SetCopyFilter(rmode->aa,rmode->sample_pattern,GX_TRUE,rmode->vfilter);
+		VIDEO_ClearFrameBuffer (rmode, xfb[FB_FRONT], COLOR_BLACK);
+		VIDEO_Flush ();
+	}
+	VIDEO_WaitVSync(); //等待垂直同步，确保帧同步
+	if(rmode->viTVMode&VI_NON_INTERLACE) VIDEO_WaitVSync();
+
+	GX_SetCopyClear(background, 0x00ffffff);
+	GX_SetViewport(0.0F, 0.0F, rmode->fbWidth, rmode->efbHeight, 0.0F, 1.0F);
+	yscale = GX_GetYScaleFactor(rmode->efbHeight,rmode->xfbHeight);
+	xfbHeight = GX_SetDispCopyYScale(yscale);
+	xfbWidth = VIDEO_PadFramebufferWidth(rmode->fbWidth);
+	// 上面的内容是：设置视口，计算 Y 轴的缩放因子，调整帧缓冲区的显示比例。
+	
+	GX_SetScissor(0,0,rmode->fbWidth,rmode->efbHeight);
+	GX_SetPixelFmt(GX_PF_RGB8_Z24, GX_ZC_LINEAR);
+	GX_SetDispCopySrc(0,0,rmode->fbWidth,rmode->efbHeight);
+	GX_SetDispCopyDst(xfbWidth, xfbHeight);
+	GX_SetFieldMode(rmode->field_rendering,((rmode->viHeight==2*rmode->xfbHeight)?GX_ENABLE:GX_DISABLE));
+	GX_SetCullMode(GX_CULL_NONE);
+	GX_SetDispCopyGamma(GX_GM_1_0);
+	GX_SetNumChans(1);
+	GX_SetNumTexGens(1);
+	// 上面的内容是：设置裁剪区域、像素格式、显示源和目标、渲染模式（是否启用场地渲染）等。
+	
+	GX_SetTevOp(GX_TEVSTAGE0, GX_MODULATE);
+	GX_SetTevOrder(GX_TEVSTAGE0, GX_TEXCOORD0, GX_TEXMAP0, GX_COLOR0A0);
+	GX_SetTexCoordGen(GX_TEXCOORD0, GX_TG_MTX2x4, GX_TG_TEX0, GX_IDENTITY);
+	height = rmode->efbHeight;
+	guOrtho(perspective,0,height,0,width,0,300);
+	
+	// 加载投影矩阵，设置图形渲染参数，完成图像渲染和显示的配置。
+	GX_LoadProjectionMtx(perspective, GX_ORTHOGRAPHIC);
+	GX_SetDither(GX_FALSE);
+
+}
+
 extern "C" unsigned int usleep(unsigned int us);
 void video_mode_init(GXRModeObj *rmode, u32 *fb1, u32 *fb2, u32 *fb3);
 

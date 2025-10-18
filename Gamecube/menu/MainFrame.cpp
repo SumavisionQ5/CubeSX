@@ -201,6 +201,10 @@ void go(void);
 extern char menuActive;
 extern "C" unsigned int usleep(unsigned int us);
 
+// 240P需要
+extern int backFromMenu; 
+extern "C" void switchToTVMode(short dWidth, short dHeight, bool retMenu);
+
 void Func_PlayGame()
 {
 	if(!hasLoadedISO)
@@ -236,6 +240,10 @@ void Func_PlayGame()
 	resumeAudio();
 	resumeInput();
 	menuActive = 0;
+	
+	//if (originalMode)  // 只需要240P，所以只考虑originalMode = 1。
+		backFromMenu = 1;  // 如果启用240P,则让backFromMenu参数为1，此时不显示菜单，表明从菜单即将回到运行游戏。
+	
 #ifdef DEBUGON
 	_break();
 #endif
@@ -247,6 +255,9 @@ void Func_PlayGame()
 	menuActive = 1;
 	pauseInput();
 	pauseAudio();
+	
+	// if (originalMode) // 只需要240P，所以只考虑originalMode = 1。
+		switchToTVMode(640, 480, 1);
 
 #ifdef HW_RVL
   resume_netinit_thread();
