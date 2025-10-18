@@ -52,9 +52,6 @@ extern int UseGui;
 int cdOpenCase = 0;
 int ShowPic=0;
 
-int backFromMenu = 1; // 240P相关
-void switchToTVMode(short dWidth, short dHeight, bool retMenu);
-
 void gpuShowPic() {
 	/*char Text[255];
 	gzFile f;
@@ -696,14 +693,6 @@ static void gc_vout_close(void) {}
 
 static void gc_vout_flip(const void *vram, int stride, int bgr24,
 			      int x, int y, int w, int h, int dims_changed) {
-
-	/* static int iOldDX=0;
-	static int iOldDY=0;
-	short iDX = PreviousPSXDisplay.Range.x1 & 0xFFF8;
-	if (iDX < PreviousPSXDisplay.Range.x1)
-		iDX += 8;
-	short iDY = PreviousPSXDisplay.DisplayMode.y; */
-	
 	if(vram == NULL) {
 		memset(GXtexture,0,sizeof(GXtexture));
 		if (menuActive) return;
@@ -730,29 +719,12 @@ static void gc_vout_flip(const void *vram, int stride, int bgr24,
 		return;
 	}
 	if (menuActive) return;
-	
-	/* if(iOldDX!=iDX || iOldDY!=iDY)
-	{
-		//memset(GXtexture, 0, GXRESX_MAX*RESY_MAX*2);
-		iOldDX=iDX;iOldDY=iDY;
-		backFromMenu = 1;
-	} */
 
 	//reset swap table from GUI/DEBUG
 	GX_SetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_BLUE, GX_CH_GREEN, GX_CH_RED ,GX_CH_ALPHA);
 	GX_SetTevSwapMode(GX_TEVSTAGE0, GX_TEV_SWAP0, GX_TEV_SWAP0);
 
 	GX_Flip(vram, stride * 2, bgr24 ? GX_TF_RGBA8 : GX_TF_RGB5A3, x, y, w, h);
-	
-	// Check if TVMode needs to be changed (240 or 480 lines)
-	/* if (originalMode == ORIGINALMODE_ENABLE) */
-	{
-		if(backFromMenu)
-		{
-			backFromMenu = 0;
-			switchToTVMode(w, h, 0);
-		}
-	}
 }
 
 static void gc_vout_set_mode(int w, int h, int raw_w, int raw_h, int bpp) {
