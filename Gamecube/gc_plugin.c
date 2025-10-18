@@ -750,7 +750,7 @@ static void gc_vout_flip(const void *vram, int stride, int bgr24,
 		if(backFromMenu)
 		{
 			backFromMenu = 0;
-			switchToTVMode(640, 240, 0);
+			switchToTVMode(w, h, 0);
 		}
 	}
 }
