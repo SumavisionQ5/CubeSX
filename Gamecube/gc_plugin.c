@@ -747,9 +747,9 @@ static void gc_vout_flip(const void *vram, int stride, int bgr24,
 	// Check if TVMode needs to be changed (240 or 480 lines)
 	/* if (originalMode == ORIGINALMODE_ENABLE) */
 	{
-		if(backFromMenu)
+		//if(backFromMenu)
 		{
-			backFromMenu = 0;
+			//backFromMenu = 0;
 			switchToTVMode(w, h, 0);
 		}
 	}
