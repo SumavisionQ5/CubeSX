@@ -697,12 +697,12 @@ static void gc_vout_close(void) {}
 static void gc_vout_flip(const void *vram, int stride, int bgr24,
 			      int x, int y, int w, int h, int dims_changed) {
 
-	static int iOldDX=0;
+	/* static int iOldDX=0;
 	static int iOldDY=0;
 	short iDX = PreviousPSXDisplay.Range.x1 & 0xFFF8;
 	if (iDX < PreviousPSXDisplay.Range.x1)
 		iDX += 8;
-	short iDY = PreviousPSXDisplay.DisplayMode.y;
+	short iDY = PreviousPSXDisplay.DisplayMode.y; */
 	
 	if(vram == NULL) {
 		memset(GXtexture,0,sizeof(GXtexture));
