@@ -53,6 +53,7 @@ int cdOpenCase = 0;
 int ShowPic=0;
 
 int backFromMenu = 1; // 240P相关
+void switchToTVMode(short dWidth, short dHeight, bool retMenu);
 
 void gpuShowPic() {
 	/*char Text[255];
@@ -730,12 +731,12 @@ static void gc_vout_flip(const void *vram, int stride, int bgr24,
 	}
 	if (menuActive) return;
 	
-	if(iOldDX!=iDX || iOldDY!=iDY)
+	/* if(iOldDX!=iDX || iOldDY!=iDY)
 	{
 		//memset(GXtexture, 0, GXRESX_MAX*RESY_MAX*2);
 		iOldDX=iDX;iOldDY=iDY;
 		backFromMenu = 1;
-	}
+	} */
 
 	//reset swap table from GUI/DEBUG
 	GX_SetTevSwapModeTable(GX_TEV_SWAP0, GX_CH_BLUE, GX_CH_GREEN, GX_CH_RED ,GX_CH_ALPHA);
