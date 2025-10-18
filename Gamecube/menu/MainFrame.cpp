@@ -243,6 +243,7 @@ void Func_PlayGame()
 	
 	//if (originalMode)  // 只需要240P，所以只考虑originalMode = 1。
 		backFromMenu = 1;  // 如果启用240P,则让backFromMenu参数为1，此时不显示菜单，表明从菜单即将回到运行游戏。
+		switchToTVMode(640, 240, 0);
 	
 #ifdef DEBUGON
 	_break();
