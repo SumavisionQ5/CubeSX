@@ -32,6 +32,9 @@ public:
 	Graphics(GXRModeObj *vmode);
 	~Graphics();
 	void init();
+	void resetCopyParamsForMenu(bool applyDeflicker);
+	GXRModeObj* getVmode();
+	void setNativeOut(bool is_pal);
 	void drawInit();
 	void swapBuffers();
 	void clearEFB(GXColor color, u32 zvalue);
@@ -70,6 +73,7 @@ private:
 	float getCurrentTransparency(int index);
 	GXRModeObj *vmode;
 	GXRModeObj vmode_phys;
+	GXRModeObj *curVmode;
 	int which_fb;
 	bool first_frame;
 	void *xfb[3];
